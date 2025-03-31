@@ -7,26 +7,28 @@ interface CookieConsentProps {
   position?: 'top' | 'bottom';
   onAccept?: () => void;
   onDeny?: () => void;
+  checkConsentNeeded?: () => boolean; // Optional logic to decide if banner is needed
 }
 
 const CookieConsent: React.FC<CookieConsentProps> = ({
-  message = 'This site uses cookies to enhance user experience.',
+  message = 'This site may use cookies or similar technologies to enhance your experience.',
   acceptText = 'Accept',
   denyText = 'Deny',
   position = 'bottom',
   onAccept,
   onDeny,
+  checkConsentNeeded = () => true, // By default, assume consent is needed
 }) => {
   const [visible, setVisible] = useState(false);
   const [consentGiven, setConsentGiven] = useState<boolean | null>(null);
 
   useEffect(() => {
     const storedConsent = localStorage.getItem('cookieConsent');
-    if (!storedConsent) {
+    if (!storedConsent && checkConsentNeeded()) {
       setVisible(true);
     }
     setConsentGiven(storedConsent === 'true');
-  }, []);
+  }, [checkConsentNeeded]);
 
   const handleAccept = () => {
     localStorage.setItem('cookieConsent', 'true');
@@ -58,6 +60,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 1000,
+        fontSize: '0.9rem',
       }}
     >
       <span>{message}</span>
